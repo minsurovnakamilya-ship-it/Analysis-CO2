@@ -1,0 +1,24 @@
+# Data
+data/
+*.csv
+*.pkl
+
+# Models
+models/
+AutogluonModels/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+
+# Logs
+*.log
+
+# Data (если большой файл)
+# data/
+
+# Binary files
+*.pkl
