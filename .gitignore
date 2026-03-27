@@ -1,3 +1,8 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
 # Data
 data/
 *.csv
@@ -7,18 +12,8 @@ data/
 models/
 AutogluonModels/
 
-# Python cache
-__pycache__/
-*.pyc
+# Jupyter
+.ipynb_checkpoints/
 
-# Virtual environment
-venv/
-
-# Logs
-*.log
-
-# Data (если большой файл)
-# data/
-
-# Binary files
-*.pkl
+# OS
+.DS_Store
