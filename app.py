@@ -9,16 +9,13 @@ from src.model import ForecastModel
 from src.visualize import plot_forecast
 from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
 
-# Настройка страницы
+
 st.set_page_config(page_title="CO2 Forecast System", layout="wide")
-st.title("🌍 Система прогнозирования выбросов CO2")
+st.title("Система прогнозирования выбросов CO2")
 
 DATA_PATH = "data/processed/owid_co2_data.csv"
 
 
-# -------------------
-# Загрузка данных
-# -------------------
 @st.cache_data
 def load_data():
     return prepare_timeseries_data(DATA_PATH)
@@ -26,24 +23,17 @@ def load_data():
 
 try:
     ts_data = load_data()
-
-    # -------------------
-    # Вкладки
-    # -------------------
     tab1, tab2, tab3, tab4 = st.tabs(
         [
-            "📈 Базовый прогноз",
-            "🧠 Прогноз с признаками",
-            "📊 Аналитика",
-            "🗺 Карта CO2",
+            "Базовый прогноз",
+            "Прогноз с признаками",
+            "Аналитика",
+            "Карта CO2",
         ]
     )
 
     countries = ts_data.index.get_level_values(0).unique().tolist()
 
-    # -------------------
-    # Боковая панель
-    # -------------------
     st.sidebar.header("Настройки прогноза")
     selected_country = st.sidebar.selectbox(
         "Выберите страну/регион",
@@ -52,9 +42,7 @@ try:
     )
     prediction_years = st.sidebar.slider("Горизонт прогноза (лет)", 5, 30, 10)
 
-    # -------------------
-    # ТАБ 1: БАЗОВЫЙ ПРОГНОЗ
-    # -------------------
+   
     with tab1:
         model_base = ForecastModel(model_path="models/ag_model_v1")
 
@@ -72,11 +60,9 @@ try:
                 fig = plot_forecast(ts_data, predictions, selected_country)
                 st.plotly_chart(fig, use_container_width=True)
 
-    # -------------------
-    # ТАБ 2: ПРОГНОЗ С ПРИЗНАКАМИ
-    # -------------------
+    
     with tab2:
-        st.header("🧠 Прогноз с дополнительными признаками")
+        st.header("Прогноз с дополнительными признаками")
         st.info("Модель учитывает GDP, Population и Energy для поиска зависимостей.")
 
         cov_model_path = "models/ag_model_cov"
@@ -105,15 +91,12 @@ try:
                 except Exception as e:
                     st.error(f"Ошибка при прогнозировании: {e}")
 
-    # -------------------
-    # ТАБ 3: АНАЛИТИКА
-    # -------------------
+  
     with tab3:
-        st.header("📊 Аналитика данных")
+        st.header("Аналитика данных")
 
         df = pd.DataFrame(ts_data).reset_index()
 
-        # 🔹 Выбор страны
         countries = df["item_id"].unique().tolist()
         selected_country_analytics = st.selectbox(
             "Выберите страну для анализа",
@@ -122,8 +105,8 @@ try:
             key="analytics_country",
         )
 
-        # 🔹 Временной ряд
-        st.subheader("📈 Динамика выбросов CO2")
+        
+        st.subheader("Динамика выбросов CO2")
         country_df = df[df["item_id"] == selected_country_analytics]
         fig1, ax1 = plt.subplots()
         ax1.plot(country_df["timestamp"], country_df["target"])
@@ -132,8 +115,7 @@ try:
         ax1.set_ylabel("CO2")
         st.pyplot(fig1)
 
-        # 🔹 Корреляция
-        st.subheader("📊 Корреляция признаков")
+        st.subheader("Корреляция признаков")
         cols = ["target", "gdp", "population", "primary_energy_consumption"]
         cols = [c for c in cols if c in df.columns]
 
@@ -145,15 +127,14 @@ try:
         else:
             st.warning("Недостаточно признаков для корреляции")
 
-        # 🔹 Влияние признаков
-        st.subheader("📌 Влияние факторов на CO2")
+        st.subheader("Влияние факторов на CO2")
         if "target" in df.columns:
             corr_target = df[cols].corr()["target"].sort_values(ascending=False)
             st.dataframe(corr_target)
             st.bar_chart(corr_target)
 
-        # 🔹 Топ-10 стран по выбросам
-        st.subheader("🏆 Топ-10 стран по выбросам CO2")
+        
+        st.subheader("Топ-10 стран по выбросам CO2")
         top_countries = df.groupby("item_id")["target"].max().nlargest(10).reset_index()
         fig3, ax3 = plt.subplots(figsize=(10, 6))
         sns.barplot(
@@ -163,11 +144,9 @@ try:
         ax3.set_ylabel("Страна / Регион")
         st.pyplot(fig3)
 
-    # -------------------
-    # ТАБ 4: ИНТЕРАКТИВНАЯ КАРТА
-    # -------------------
+
     with tab4:
-        st.header("🗺 Глобальная карта выбросов CO2")
+        st.header("Глобальная карта выбросов CO2")
         df = ts_data.reset_index()
         latest_df = df.sort_values("timestamp").groupby("item_id").last().reset_index()
         latest_df = latest_df[latest_df["item_id"] != "World"]  # исключаем глобум
@@ -189,10 +168,8 @@ try:
 
         st.plotly_chart(fig_map, use_container_width=True)
 
-    # -------------------
-    # Сравнение моделей (вне табов)
-    # -------------------
-    if st.checkbox("📊 Показать сравнение моделей"):
+   
+    if st.checkbox("Показать сравнение моделей"):
         try:
             current_model = ForecastModel(model_path="models/ag_model_v1")
 
@@ -206,7 +183,7 @@ try:
                 if leaderboard is not None:
                     st.dataframe(leaderboard)
                     rmse = current_model.evaluate_rmse(ts_data)
-                    st.write(f"📉 Средний RMSE: {rmse:.3f}")
+                    st.write(f"Средний RMSE: {rmse:.3f}")
                     st.bar_chart(leaderboard.set_index("Model")["MASE"])
                 else:
                     st.warning("Нет данных о моделях")

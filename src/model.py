@@ -11,10 +11,8 @@ class ForecastModel:
         self.model_path = model_path
         self.predictor = None
 
-    # ТЕПЕРЬ МЕТОД train НА СВОЕМ МЕСТЕ (на одном уровне с __init__)
     def train(self, train_data, prediction_length=10, presets="medium_quality"):
         """Обучение моделей."""
-        # Удаляем старую папку перед обучением, если она есть
         if os.path.exists(self.model_path):
             shutil.rmtree(self.model_path)
 
@@ -26,9 +24,7 @@ class ForecastModel:
             freq="Y",
         )
 
-        self.predictor.fit(
-            train_data, presets=presets, time_limit=300  # 5 минут вполне достаточно
-        )
+        self.predictor.fit(train_data, presets=presets, time_limit=300)  # 5 мин
         print(f"Модель обучена и сохранена в {self.model_path}")
 
     def load(self):
@@ -46,7 +42,6 @@ class ForecastModel:
         try:
             return self.predictor.predict(train_data)
         except Exception as e:
-            # Если нужны ковариаты (признаки), создаем заглушки на будущее
             if "known_covariates" in str(e):
                 future_cov = self.predictor.construct_empty_future_covariates(
                     train_data
@@ -88,7 +83,7 @@ class ForecastModel:
 
         predictions = self.predict(train_data)
         rmses = []
-        # Берем только первые 20 стран для быстрой оценки
+
         items = train_data.item_ids[:20]
         for item_id in items:
             try:

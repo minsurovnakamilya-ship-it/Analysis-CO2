@@ -6,17 +6,17 @@ def plot_forecast(train_data, predictions, item_id, title="Прогноз выб
     """
     Рисует интерактивный график: история + прогноз с доверительными интервалами.
     """
-    # 1. Извлекаем историю и прогноз для конкретной страны
+    
     history = train_data.loc[item_id]
     forecast = predictions.loc[item_id]
 
-    # Определяем колонки квантилей (они могут быть '0.1' или 0.1)
+    # Определяем колонки квантилей они могут быть '0.1' или 0.1
     q_low = "0.1" if "0.1" in forecast.columns else 0.1
     q_high = "0.9" if "0.9" in forecast.columns else 0.9
 
     fig = go.Figure()
 
-    # Линия исторических данных
+    # исторические данные
     fig.add_trace(
         go.Scatter(
             x=history.index,
@@ -26,14 +26,13 @@ def plot_forecast(train_data, predictions, item_id, title="Прогноз выб
         )
     )
 
-    # Доверительный интервал (Заливка) - ДОЛЖНА БЫТЬ ПЕРЕД ЛИНИЕЙ ПРОГНОЗА
-    # Чтобы линия прогноза была сверху заливки
+    # Доверительный интервал 
     fig.add_trace(
         go.Scatter(
             x=list(forecast.index) + list(forecast.index)[::-1],
             y=list(forecast[q_high]) + list(forecast[q_low])[::-1],
             fill="toself",
-            fillcolor="rgba(214, 39, 40, 0.2)",  # Полупрозрачный красный
+            fillcolor="rgba(214, 39, 40, 0.2)",  
             line=dict(color="rgba(255, 255, 255, 0)"),
             hoverinfo="skip",
             showlegend=True,
@@ -41,17 +40,16 @@ def plot_forecast(train_data, predictions, item_id, title="Прогноз выб
         )
     )
 
-    # Линия прогноза (среднее значение)
+    # среднее значение
     fig.add_trace(
         go.Scatter(
             x=forecast.index,
             y=forecast["mean"],
             name="Прогноз",
-            line=dict(color="#d62728", width=3, dash="dash"),  # Красный пунктир
+            line=dict(color="#d62728", width=3, dash="dash"),  
         )
     )
 
-    # Настройка внешнего вида
     fig.update_layout(
         title=dict(
             text=f"<b>{title}: {item_id}</b>",
@@ -68,7 +66,7 @@ def plot_forecast(train_data, predictions, item_id, title="Прогноз выб
         height=600,
     )
 
-    # Включаем сетку для удобства
+    
     fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor="LightGrey")
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="LightGrey")
 
